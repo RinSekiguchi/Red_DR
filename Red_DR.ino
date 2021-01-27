@@ -11,24 +11,29 @@
 #include "Controller.h" //コントローラーを使うためのライブラリ―
 #include "Filter.h"
 
+//シリアル通信関係
+lpms_me1 lpms(&SERIAL_LPMSME1); //ジャイロセンサーの通信？？
+// 自己位置推定用のエンコーダの初期化
+encCounter enc1(1);
+encCounter enc2(2);
 myLCDclass myLCD(&SERIAL_LCD);
 RoboClaw MD(&SERIAL_ROBOCLAW, 1);
 Controller CONT(&SERIAL_LEONARDO);
-
-double INT_TIME = 0.010;           //PIDのライブラリーの中で使う時間
-int MS_INT_TIME = INT_TIME * 1000; //msに変換する、MSタイマーではこの単位に変換
-int A = 0;                         //ボタンの値が入る
+//Lowpassfilterのクラス設定
 Filter count_filx(INT_TIME);
 Filter count_fily(INT_TIME);
 Filter count_filz(INT_TIME);
 
+double INT_TIME = 0.010;           //PIDのライブラリーの中で使う時間
+int MS_INT_TIME = INT_TIME * 1000; //msに変換する、MSタイマーではこの単位に変換
+
 double TRnoXziku = 0.0; //　速度計算代入
 double TRnoYziku = 0.0;
 
-int LED_count = 0;   //LEDを光らせる際に数をカウント？？
-int print_count = 0; //何回割込みをしたか数えるため
+int LED_count = 0;      //LEDを光らせる際に数をカウント？？
+int print_count = 0;    //何回割込みをしたか数えるため
 double angle_rad = 0.0; //ジャイロセンサから読み取った角度
-double refVx = 0.0; //コントローラーの値(-1~1までに変換)
+double refVx = 0.0;     //コントローラーの値(-1~1までに変換)
 double refVy = 0.0;
 double refVz = 0.0;
 
@@ -36,7 +41,7 @@ int tmpJoyx; //コントローラーのクラスからの値
 int tmpJoyy;
 int tmpJoyz;
 
-double TimerENC1 = 0.0; //エンコーダの差
+double TimerENC1 = 0.0; //エンコーダの差分
 double TimerENC2 = 0.0;
 double LCL_ENC_mmps_x = 0.0; //エンコーダローカル完成
 double LCL_ENC_mmps_y = 0.0;
@@ -55,23 +60,21 @@ double fil_refVy;
 double fil_refVz;
 
 double diff_vel_error_x = 0.0; //I制御
-double x_cmd = 0.0;            //グローバルの速度指令X
+double x_cmd = 0.0;            //ローカルの速度指令X
 double gain1_x = 1.0;
 double gain2_x = 0.0;
 
 double diff_vel_error_y = 0.0;
-double y_cmd = 0.0; //グローバルの速度指令X
+double y_cmd = 0.0; //ローカルの速度指令y
 double gain1_y = 1.0;
 double gain2_y = 0.0;
 
 double gol_con_x = 0.0; //グローバルからローカル
 double gol_con_y = 0.0;
 
-//シリアル通信関係
-lpms_me1 lpms(&SERIAL_LPMSME1); //ジャイロセンサーの通信？？
-// 自己位置推定用のエンコーダの初期化
-encCounter enc1(1);
-encCounter enc2(2);
+int limit_sw1 = 0;
+int limit_sw2 = 0;
+
 int enc_one = 0;
 int enc_two = 0;
 
@@ -117,6 +120,8 @@ void setup()
   pinMode(PIN_LED_1, OUTPUT);
   pinMode(PIN_LED_2, OUTPUT);
   pinMode(PIN_LED_3, OUTPUT);
+  pinMode(LIMIT_1,INPUT_PULLUP);
+  pinMode(LIMIT_2,INPUT_PULLUP);
 
   //シリアル通信関係
   Serial.begin(115200);          //PCとの通信速度
@@ -138,20 +143,23 @@ void setup()
   count_fily.setLowPassPara(0.32, 0.0);
   count_filz.setLowPassPara(0.16, 0.0);
 
-  　 myLCD.color_white(); //LCDの色を白に
+  myLCD.color_white();
   myLCD.clear_display();
-  myLCD.color_blue(); //青色に変更
+  myLCD.color_blue();
 }
 
 void loop()
 {
+  limit_sw1 = digitalRead(LIMIT_1);
+  limit_sw2 = digitalRead(LIMIT_2);
+
   digitalWrite(PIN_LED_GREEN, LOW);
   if (flag_10ms)
   {
     myLCD.write_str("angle", LINE_1, 0);   //angleの文字表氏
-    myLCD.write_str(angle_rad, LINE_1, 6); //実際の角度表示
+    myLCD.write_double(angle_rad, LINE_1, 6); //実際の角度表示
     myLCD.write_str("DISx", LINE_2, 0);
-    myLCD.write_double(ENC_DIS_x, LINE_2, 6); //グローバルの距離
+    myLCD.write_double(ENC_DIS_x, LINE_2, 6); //ロボットのグローバル座標
     myLCD.write_str("DISy", LINE_3, 0);
     myLCD.write_double(ENC_DIS_y, LINE_3, 6);
 
@@ -191,15 +199,28 @@ void loop()
       Serial.print(fil_refVy);
       Serial.print("\t");
       Serial.print(fil_refVz);
+      Serial.print("\t");
+      Serial.print(print_count);
       Serial.println("\t");
     }
+    //*********************壁越え処理*********************
+    /*if(limit_sw1 == 1){
+      print_cout = 0;
+      MD.SpeedM1(adress,speed(pps))
+      MD.SpeedM2(adress,speed(pps))
+    }
+    if(limit_sw2 == 1){
+      MD.SpeedM1(adress,speed(pps))
+      MD.SpeedM2(adress,speed(pps))
+    }*/
+    //*******************************************************
     //roboclowに速度指令値を送る
     double refOmegaA, refOmegaB, refOmegaC, refOmegaD;
-    refOmegaA = x_cmd + y_cmd + (BODY_A + BODY_B)*angle_rad;
-    refOmegaB = x_cmd + -1*y_cmd + -1*(BODY_A + BODY_B)*angle_rad;
-    refOmegaC = x_cmd + y_cmd + -1*(BODY_A + BODY_B)*angle_rad;
-    refOmegaD = x_cmd + -1*y_cmd + (BODY_A + BODY_B)*angle_rad;
-    
+    refOmegaA = x_cmd + y_cmd + (BODY_A + BODY_B) * angle_rad;
+    refOmegaB = x_cmd + -1 * y_cmd + -1 * ((BODY_A + BODY_B) * angle_rad);
+    refOmegaC = x_cmd + y_cmd + -1 * ((BODY_A + BODY_B) * angle_rad);
+    refOmegaD = x_cmd + -1 * y_cmd + (BODY_A + BODY_B) * angle_rad;
+
     //それぞれのモーターに送る速度指令値がrefOmegaA~D
     //roboclawに送るためにpps(pulse/s)に変換する
     mdCmdA = refOmegaA * _RES_PIWHEELDIM;
@@ -209,8 +230,8 @@ void loop()
 
     MD.SpeedM1(ADR_MD1, (int)mdCmdA); // 左前 ①
     MD.SpeedM2(ADR_MD1, (int)mdCmdB); // 左後 ②
-    MD.SpeedM1(ADR_MD2, (int)mdCmdC);  // 右後 ③
-    MD.SpeedM2(ADR_MD2, (int)mdCmdD);  // 右前 ④
+    MD.SpeedM1(ADR_MD2, (int)mdCmdC); // 右後 ③
+    MD.SpeedM2(ADR_MD2, (int)mdCmdD); // 右前 ④
     flag_10ms = false;
   }
 }

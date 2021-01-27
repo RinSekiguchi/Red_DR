@@ -42,8 +42,16 @@ double z;
 #define BUTTON_LEFT 16
 
 #define PIN_LED_1 20
-#define PIN_LED_2 21
-#define PIN_LED_3 22
+#define PIN_LED_2 36
+#define PIN_LED_3 37
+
+#define LIMIT_1 47
+#define LIMIT_2 48
+#define LIMIT_3 46
+#define LIMIT_4 49
+
+#define SOLENOID_1 45
+#define SOLENOID_2 44
 
 #define BODY_A 0.4
 #define BODY_B 0.55
