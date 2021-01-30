@@ -15,56 +15,47 @@
 #define BUTTON_DOWN    0x4000
 #define BUTTON_LEFT    0x8000
 
+#define CONTROLL Serial7
+
 unsigned int ButtonState;
 byte RJoyX, RJoyY, LJoyX, LJoyY;
 
 void setup() {
   Serial.begin(115200);
-  Serial4.begin(115200);
+  CONTROLL.begin(115200);
   Serial.print("ready...\n");
 }
 
 byte serial_recieve(){
-  int temp;
+  //byte temp;
+  char temp;
   do{
-    temp =Serial4.read();
+    temp =CONTROLL.read();
   }
   while(temp==-1);
-  //Serial.write(temp);
   return temp;
 }
 
 void loop() {
-  if (Serial4.available()){
-    if(serial_recieve()=='\n'){
+  if (CONTROLL.available()){    
+    if(serial_recieve()==10){
 
-      byte checksum = 0,receive_data[8];
+      //byte checksum = 0x00,receive_data[10];
+      char checksum = 0x00,receive_data[10];
 
-      for (int i=0;i<8;i++) receive_data[i]= serial_recieve();
+      for (int i=0;i<10;i++) receive_data[i]= serial_recieve();
 
-      //for(int i=0;i<9;i++)checksum ^=receive_data[i];
-      for (int i = 0; i < 9; i++) checksum += receive_data[i];
-      checksum = checksum & 0x3F + 0x20;
-        
+      for(int i=0;i<9;i++)checksum ^=receive_data[i];
 
-      if(checksum==(serial_recieve())/*&&('\n' == serial_recieve())*/){
+      if(receive_data[9]==checksum){
+        for (int i=0;i<9;i++) receive_data[i] -= 0x20;
 
-        for (int i=0;i<9;i++) receive_data[i]-0x20;
-
-        ButtonState = receive_data[0] | (receive_data[1]<<6) | (receive_data[2]<<12); 
+        ButtonState = (receive_data[0] & 0x3f)| ((receive_data[1] & 0x3f) << 6) | ((receive_data[2] &0x0f) << 12); 
         
         LJoyX = receive_data[3] | (receive_data[4]<<6) ;
         LJoyY = (receive_data[4]>>2) | (receive_data[5]<<4);
         RJoyX = (receive_data[5]>>4) | (receive_data[6]<<2);
         RJoyY = receive_data[7] | (receive_data[8]<<6);
-
-        /*for (int i=0;i<9;i++){
-         Serial.print(receive_data[i]);
-         Serial.print("\t");
-         } 
-         Serial.print("\t\t");
-         Serial.println(checksum); */
-        //Serial.println((int)checksum);
 
         Serial.print(ButtonState);
         Serial.print("\t");
@@ -74,11 +65,45 @@ void loop() {
         Serial.print("\t");
         Serial.print(RJoyX);
         Serial.print("\t");
-        Serial.println(RJoyY);
-
-        delay(4);
+        Serial.print(RJoyY);
+        Serial.print("\t");
+        Serial.println(checksum);
+        delay(10);
+        
       }
+      delay(1);
     }
+    delay(1);
   }
+
+  /*if(ButtonState==BUTTON_X) Serial.print("X");
+  if(ButtonState==BUTTON_Y) Serial.print("Y");
+  if(ButtonState==BUTTON_A) Serial.print("A");
+  if(ButtonState==BUTTON_B) Serial.print("B");
+  if(ButtonState==BUTTON_L1)Serial.print("L1");
+  if(ButtonState==BUTTON_R1)Serial.print("R1");
+  if(ButtonState==BUTTON_L2)Serial.print("L2");
+  if(ButtonState==BUTTON_R2)Serial.print("R2");
+  if(ButtonState==BUTTON_PAD)Serial.print("PAD");
+  if(ButtonState==BUTTON_PS)Serial.print("PS");
+  if(ButtonState==BUTTON_SHARE)Serial.print("SHAPE");
+  if(ButtonState==BUTTON_OPTION)Serial.print("OPTION");
+  if(ButtonState==BUTTON_UP)Serial.print("UP");
+  if(ButtonState==BUTTON_RIGHT)Serial.print("RIGHT");
+  if(ButtonState==BUTTON_DOWN)Serial.print("DOWN");
+  if(ButtonState==BUTTON_LEFT)Serial.print("LEFT");
+
+  float LX = LJoyX/255;  //調整必要
+  float LY = LJoyY/255;
+  float RX = RJoyX/255;
+  float RY = RJoyY/255;
+  Serial.print(LX);
+  Serial.print(" | ");
+  Serial.print(LY);
+  Serial.print(" | ");
+  Serial.print(RX);
+  Serial.print(" | ");
+  Seiral.println(RY);*/
+  
 }
 
