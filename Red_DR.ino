@@ -33,15 +33,16 @@ byte serial_recieve(){
     temp =CONTROLL.read();
   }
   while(temp==-1);
+  CONTROLL.write(temp);
   return temp;
 }
 
-void loop() {
-  if (CONTROLL.available()){    
-    if(serial_recieve()==10){
-
-      //byte checksum = 0x00,receive_data[10];
-      char checksum = 0x00,receive_data[10];
+void update() {
+  char checksum = 0x00,receive_data[10];
+  int loop_count=0;
+  while(loop_count<10){
+    //if (CONTROLL.available()){    
+      if(serial_recieve()==10){
 
       for (int i=0;i<10;i++) receive_data[i]= serial_recieve();
 
@@ -56,24 +57,12 @@ void loop() {
         LJoyY = (receive_data[4]>>2) | (receive_data[5]<<4);
         RJoyX = (receive_data[5]>>4) | (receive_data[6]<<2);
         RJoyY = receive_data[7] | (receive_data[8]<<6);
-
-        Serial.print(ButtonState);
-        Serial.print("\t");
-        Serial.print(LJoyX);
-        Serial.print("\t");
-        Serial.print(LJoyY);
-        Serial.print("\t");
-        Serial.print(RJoyX);
-        Serial.print("\t");
-        Serial.print(RJoyY);
-        Serial.print("\t");
-        Serial.println(checksum);
-        delay(10);
-        
-      }
+        }
       delay(1);
-    }
+      }
+      else loop_count++;
     delay(1);
+    //} 
   }
 
   /*if(ButtonState==BUTTON_X) Serial.print("X");
@@ -107,3 +96,17 @@ void loop() {
   
 }
 
+void loop(){
+  update();
+
+  Serial.print(ButtonState);
+  Serial.print("\t");
+  Serial.print(LJoyX);
+  Serial.print("\t");
+  Serial.print(LJoyY);
+  Serial.print("\t");
+  Serial.print(RJoyX);
+  Serial.print("\t");
+  Serial.println(RJoyY);
+  delay(5);
+}
