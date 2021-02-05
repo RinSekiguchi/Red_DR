@@ -22,7 +22,7 @@ void Controller::Update(){
 
                 if(receive_data[9]==checksum){
                     for (int i=0;i<9;i++) receive_data[i] -= 0x20;
-
+                    PreButtonState = ButtonState;
                     ButtonState = (receive_data[0] & 0x3f)| ((receive_data[1] & 0x3f) << 6) | ((receive_data[2] &0x0f) << 12); 
         
                     LJoyX = receive_data[3] | (receive_data[4]<<6) ;
@@ -49,85 +49,16 @@ void Controller::StatePrint()
     Serial.println(RJoyY);
 }
 
-bool Controller::Read_X()
-{
-    return ((ButtonState & BUTTON_X) == BUTTON_X)? true:false;
-}
-
-bool Controller::Read_Y()
-{
-    return ((ButtonState & BUTTON_Y) == BUTTON_Y)? true:false;
-}
-
-bool Controller::Read_A()
-{
-    return ((ButtonState & BUTTON_A) == BUTTON_A)? true:false;
-}
-
-bool Controller::Read_B()
-{
-    return ((ButtonState & BUTTON_B) == BUTTON_B)? true:false;
-}
-
-bool Controller::Read_L1()
-{
-    return ((ButtonState & BUTTON_L1)== BUTTON_L1)? true:false;
-}
-
-bool Controller::Read_R1()
-{
-    return ((ButtonState & BUTTON_R1) == BUTTON_R1)? true:false;
-}
-
-bool Controller::Read_L2()
-{
-    return ((ButtonState & BUTTON_L2) == BUTTON_L2)? true:false;
-}
-
-bool Controller::Read_R2()
-{
-    return ((ButtonState & BUTTON_R2) == BUTTON_R2)? true:false;
-}
-
-bool Controller::Read_PAD()
-{
-    return ((ButtonState & BUTTON_PAD) == BUTTON_PAD)? true:false;
-}
-
-bool Controller::Read_PS()
-{
-    return ((ButtonState & BUTTON_PS) == BUTTON_PS)? true:false;
-}
-
-bool Controller::Read_SHARE()
-{
-    return ((ButtonState & BUTTON_SHARE) == BUTTON_SHARE)? true:false;
-}
-
-bool Controller::Read_OPTION()
-{
-    return ((ButtonState & BUTTON_OPTION) == BUTTON_OPTION)? true:false;
-}
-
-bool Controller::Read_UP()
-{
-    return ((ButtonState & BUTTON_UP) == BUTTON_UP)? true:false;
-}
-
-bool Controller::Read_RIGHT()
-{
-    return ((ButtonState & BUTTON_RIGHT) == BUTTON_RIGHT)? true:false;
-}
-
-bool Controller::Read_DOWN()
-{
-    return ((ButtonState & BUTTON_DOWN) == BUTTON_DOWN)? true:false;
-}
-
-bool Controller::Read_LEFT()
-{
-    return ((ButtonState & BUTTON_LEFT) == BUTTON_LEFT)? true:false;
-}
+bool Controller::ReadButton_bin(int ButtonNum){//放しているときは０，押しているときは１
+    return ((ButtonState & (0x0001 << ButtonNum - 1)) == (0x0001 << ButtonNum - 1))? true:false;
+    }
+    
+int Controller::ReadButton_four(int ButtonNum){//放しているときは０，押しているときは１，押した瞬間は２，放した瞬間は－１
+    int result = 0;
+    if((ButtonState & (0x0001 << ButtonNum - 1)) == (0x0001 << ButtonNum - 1)) result += 2;
+    if((PreButtonState & (0x0001 << ButtonNum - 1)) == (0x0001 << ButtonNum - 1))result -= 1;
+    return result;
+    }
 
 double Controller::Read_LJoyX()
 {

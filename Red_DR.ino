@@ -24,6 +24,38 @@ void loop(){
     ESP.Update();
     ESP.StatePrint();
 
+    /*Serial.print(ESP.ReadButton_four(1));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(2));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(3));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(4));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(5));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(6));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(7));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(8));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(9));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(10));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(11));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(12));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(13));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(14));
+    Serial.print("\t");
+    Serial.print(ESP.ReadButton_four(15));
+    Serial.print("\t");
+    Serial.println(ESP.ReadButton_four(16));*/
+
     /*Serial.print(ESP.Read_X());
     Serial.print("\t");
     Serial.print(ESP.Read_Y());

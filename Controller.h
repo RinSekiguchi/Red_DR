@@ -8,23 +8,8 @@ class Controller{
         Controller(int SerialSpeed);
         void Update();
         void StatePrint();
-    
-        bool Read_X();
-        bool Read_Y();
-        bool Read_A();
-        bool Read_B();
-        bool Read_L1();    
-        bool Read_R1();
-        bool Read_L2();
-        bool Read_R2();
-        bool Read_PAD();
-        bool Read_PS();
-        bool Read_SHARE();
-        bool Read_OPTION();
-        bool Read_UP();
-        bool Read_RIGHT();
-        bool Read_DOWN();
-        bool Read_LEFT();
+        bool ReadButton_bin(int ButtonNum);
+        int  ReadButton_four(int ButtonNum);
     
         double Read_LJoyX();
         double Read_LJoyY();
@@ -34,6 +19,7 @@ class Controller{
     private:
         
         unsigned int ButtonState;
+        unsigned int PreButtonState;
         uint8_t RJoyX, RJoyY, LJoyX, LJoyY;
 
         byte serial_recieve(){
