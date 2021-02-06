@@ -1,7 +1,7 @@
-#define BUTTON_SQUARE   1
-#define BUTTON_TRIANGLE 2
-#define BUTTON_CROSS    3
-#define BUTTON_CIRCLE   4
+#define BUTTON_SIKAKU   1
+#define BUTTON_SANKAKU  2
+#define BUTTON_BATU     3
+#define BUTTON_MARU     4
 #define BUTTON_L1       5
 #define BUTTON_R1       6
 #define BUTTON_L2       7

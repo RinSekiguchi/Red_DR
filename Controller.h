@@ -6,20 +6,27 @@
 class Controller{
     public:
         Controller(int SerialSpeed);
-        void Update();
-        void StatePrint();
-        bool ReadButton_bin(int ButtonNum);
-        int  ReadButton_four(int ButtonNum);
+        void update();
+        void statePrint();
+        bool readButton_bin(unsigned int ButtonNum);
+        int  readButton(unsigned int ButtonNum);
+
+        unsigned int getButtonState();
     
-        double Read_LJoyX();
-        double Read_LJoyY();
-        double Read_RJoyX();
-        double Read_RJoyY();    
+        double readJoyLX();
+        double readJoyLY();
+        double readJoyRX();
+        double readJoyRY();   
+
+        uint8_t readJoyLXbyte();
+        uint8_t readJoyLYbyte();
+        uint8_t readJoyRXbyte();
+        uint8_t readJoyRYbyte(); 
         
     private:
         
         unsigned int ButtonState;
-        unsigned int PreButtonState;
+        unsigned int preButtonState;
         uint8_t RJoyX, RJoyY, LJoyX, LJoyY;
 
         byte serial_recieve(){
