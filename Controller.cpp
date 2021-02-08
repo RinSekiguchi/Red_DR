@@ -8,25 +8,25 @@ Controller::Controller(int SerialSpeed){
 }
 
 void Controller::update(){
-  char checksum = 0x00,receive_data[10];
+  char checksum = 0x00,receive_data[9];
   int loop_count=0;
   
     while(loop_count<10 && CONTROL.available()){    
             if(serial_recieve()==10){
 
-                for (int i=0;i<10;i++) receive_data[i]= serial_recieve();
+                for (int i=0;i<9;i++) receive_data[i]= serial_recieve();
+                for (int i=0;i<9;i++) receive_data[i] -= 0x20;
+                for(int i=0;i<8;i++)checksum ^=receive_data[i];
 
-                for(int i=0;i<9;i++)checksum ^=receive_data[i];
-
-                if(receive_data[9]==checksum){
-                    for (int i=0;i<9;i++) receive_data[i] -= 0x20;
+                if(receive_data[8]==checksum){
+                
                     preButtonState = ButtonState;
-                    ButtonState = (receive_data[0] & 0x3f)| ((receive_data[1] & 0x3f) << 6) | ((receive_data[2] &0x0f) << 12); 
-        
+                    ButtonState = (receive_data[0] & 0x3f) | ((receive_data[1] & 0x3f) << 6) | ((receive_data[2] &0x0f) << 12);
+
                     LJoyX = receive_data[3] | (receive_data[4]<<6) ;
                     LJoyY = (receive_data[4]>>2) | (receive_data[5]<<4);
                     RJoyX = (receive_data[5]>>4) | (receive_data[6]<<2);
-                    RJoyY = receive_data[7] | (receive_data[8]<<6);
+                    RJoyY = receive_data[7] | ((receive_data[2] & 0x30)<<2);
                     
                     break;
                 }
