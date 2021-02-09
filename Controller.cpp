@@ -2,7 +2,7 @@
 #include "define.h"
 #include "Controller.h"
 
-Controller::Controller(int SerialSpeed){
+Controller::Controller(){
     ButtonState=0;
     RJoyX=127, RJoyY=127, LJoyX=127, LJoyY=127;
 }
